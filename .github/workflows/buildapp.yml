@@ -88,6 +88,12 @@ jobs:
           cd ${{ github.workspace }}/main
           git -C Tweaks/YTABConfig apply ../../Patches/YTABConfig-readable-annotations.patch
 
+      - name: Apply YTKACE aggregate build paths
+        run: |
+          cd ${{ github.workspace }}/main
+          git -C Tweaks/YTKACE apply --unidiff-zero --check ../../Patches/YTKACE-subproject-paths.patch
+          git -C Tweaks/YTKACE apply --unidiff-zero ../../Patches/YTKACE-subproject-paths.patch
+
       - name: Test Caption Island
         run: |
           cd ${{ github.workspace }}/main
