@@ -10,6 +10,50 @@ index 9d24990..9fd728d 100644
  
  @interface FeedMetadataRecord : NSObject
  
+diff --git a/sources/CustomSettings.m b/sources/CustomSettings.m
+index 66d375e..02ec3b7 100644
+--- a/sources/CustomSettings.m
++++ b/sources/CustomSettings.m
+@@ -20,6 +20,16 @@ static void ShowToast(UIViewController *viewController, NSString *message) {
+     [Util showToast:message fromView:viewController.view];
+ }
+ 
++#pragma clang diagnostic push
++#pragma clang diagnostic ignored "-Wdeprecated-declarations"
++static void ConfigureLegacyButtonInsets(UIButton *button,
++                                        CGFloat imagePadding,
++                                        UIEdgeInsets contentInsets) {
++    button.imageEdgeInsets = UIEdgeInsetsMake(0.0, 0.0, 0.0, imagePadding);
++    button.contentEdgeInsets = contentInsets;
++}
++#pragma clang diagnostic pop
++
+ static UIButton *NavigationBackButton(NSString *title, id target, SEL action) {
+     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+     if (@available(iOS 15.0, *)) {
+@@ -32,8 +42,8 @@ static void ShowToast(UIViewController *viewController, NSString *message) {
+     } else {
+         [button setImage:[UIImage systemImageNamed:@"chevron.backward"] forState:UIControlStateNormal];
+         [button setTitle:title forState:UIControlStateNormal];
+-        button.imageEdgeInsets = UIEdgeInsetsMake(0.0, 0.0, 0.0, 4.0);
+-        button.contentEdgeInsets = UIEdgeInsetsMake(0.0, 12.0, 0.0, 12.0);
++        ConfigureLegacyButtonInsets(button, 4.0,
++            UIEdgeInsetsMake(0.0, 12.0, 0.0, 12.0));
+     }
+     button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+     button.frame = CGRectMake(0.0, 0.0, MAX(44.0, button.intrinsicContentSize.width), 44.0);
+@@ -547,8 +557,9 @@ - (UITableViewCell *)buttonCellForTableView:(UITableView *)tableView indexPath:(
+         NSString *symbol = prominent ? @"heart.fill" : (changelog ? @"sparkles" : (indexPath.row == 0 ? @"square.and.arrow.up" : @"square.and.arrow.down"));
+         [button setImage:[UIImage systemImageNamed:symbol] forState:UIControlStateNormal];
+         [button setTitle:title forState:UIControlStateNormal];
+-        button.imageEdgeInsets = UIEdgeInsetsMake(0.0, 0.0, 0.0, 6.0);
+-        button.contentEdgeInsets = UIEdgeInsetsMake(prominent ? 12.0 : 8.0, 0.0, prominent ? 12.0 : 8.0, 0.0);
++        CGFloat verticalInset = prominent ? 12.0 : 8.0;
++        ConfigureLegacyButtonInsets(button, 6.0,
++            UIEdgeInsetsMake(verticalInset, 0.0, verticalInset, 0.0));
+     }
+     button.tag = indexPath.section * 100 + indexPath.row;
+     button.accessibilityLabel = title;
 diff --git a/sources/Settings.x b/sources/Settings.x
 index fb15c8c..c5583ce 100644
 --- a/sources/Settings.x
