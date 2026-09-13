@@ -300,10 +300,22 @@ jobs:
           ENABLE_YTUHD: ${{ inputs.enable_ytuhd && '1' || '0' }}
         run: |
           cd ${{ github.workspace }}/main
+          set -Eeuo pipefail
+          PS4='+ verify:${LINENO}: '
+          trap 'status=$?; echo "::error title=IPA verification failed::Command failed with exit ${status} at line ${LINENO}: ${BASH_COMMAND}"; exit "$status"' ERR
           verify_dir="$(mktemp -d)"
           unzip -q "packages/${PACKAGE_NAME}" -d "$verify_dir"
           app_path="$(find "$verify_dir/Payload" -maxdepth 1 -type d -name '*.app' -print -quit)"
           test -n "$app_path"
+          echo "==> Verifying package: ${PACKAGE_NAME}"
+          echo "==> App path: ${app_path}"
+          echo "==> Embedded frameworks:"
+          find "$app_path/Frameworks" -maxdepth 1 -mindepth 1 -print 2>/dev/null | sed "s#^${app_path}/##" | sort
+          echo "==> Embedded bundles:"
+          find "$app_path" -maxdepth 1 -type d -name '*.bundle' -print | sed "s#^${app_path}/##" | sort
+          echo "==> Embedded extensions:"
+          find "$app_path/PlugIns" -maxdepth 1 -type d -name '*.appex' -print 2>/dev/null | sed "s#^${app_path}/##" | sort
+          set -x
           test "$(plutil -extract NSSupportsLiveActivities raw -expect bool -o - "$app_path/Info.plist")" = "true"
           test "$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$app_path/Info.plist")" = "$MINIMUM_IOS_VERSION"
           /usr/libexec/PlistBuddy -c 'Print :UIBackgroundModes' "$app_path/Info.plist" | grep -qw audio
@@ -381,6 +393,7 @@ jobs:
             esac
             test "$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$extension_plist")" = "$MINIMUM_IOS_VERSION"
           done
+          set +x
           echo "==> YTKACE, CaptionIsland and native Live Activity extension verified; uYou is absent"
 
       - name: Upload Artifact
