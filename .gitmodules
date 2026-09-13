@@ -93,7 +93,7 @@
 	branch = main
 [submodule "Tweaks/YTKACE"]
 	path = Tweaks/YTKACE
-	url = https://github.com/itzzace/ytkace.git
+	url = https://github.com/iervn6341-ovo/ytkace.git
 	branch = main
 [submodule "Tweaks/Gonerino"]
 	path = Tweaks/Gonerino
