@@ -1,0 +1,97 @@
+diff --git a/headers/Util.h b/headers/Util.h
+index 9d24990..9fd728d 100644
+--- a/headers/Util.h
++++ b/headers/Util.h
+@@ -7,6 +7,7 @@
+ NS_ASSUME_NONNULL_BEGIN
+ 
+ extern NSString * const FeedFilterStateDidChangeNotification;
++FOUNDATION_EXPORT NSArray<UIWindow *> *GonerinoActiveWindows(void);
+ 
+ @interface FeedMetadataRecord : NSObject
+ 
+diff --git a/sources/Settings.x b/sources/Settings.x
+index fb15c8c..c5583ce 100644
+--- a/sources/Settings.x
++++ b/sources/Settings.x
+@@ -1,6 +1,7 @@
+ #import "Settings.h"
+ #import "CustomSettings.h"
+ #import "Localization.h"
++#import "Util.h"
+ #import <objc/runtime.h>
+ 
+ static void *SettingsManagerAssociationKey = &SettingsManagerAssociationKey;
+@@ -54,7 +55,7 @@ static void AssociateSettingsManager(YTSettingsViewController *settingsViewContr
+                              OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+     UINavigationController *navigationController = settingsViewController.navigationController;
+     if (!navigationController) {
+-        for (UIWindow *window in [UIApplication sharedApplication].windows) {
++        for (UIWindow *window in GonerinoActiveWindows()) {
+             navigationController = NavigationControllerContaining(window.rootViewController,
+                                                                    settingsViewController,
+                                                                    0);
+@@ -151,7 +152,7 @@ static YTSettingsViewController *SettingsViewControllerForManager(YTSettingsSect
+     }
+ 
+     Class settingsClass = %c(YTSettingsViewController);
+-    for (UIWindow *window in [UIApplication sharedApplication].windows) {
++    for (UIWindow *window in GonerinoActiveWindows()) {
+         UIViewController *candidate = TopVisibleViewController(window.rootViewController);
+         if ([candidate isKindOfClass:settingsClass]) {
+             return (YTSettingsViewController *)candidate;
+@@ -166,7 +167,7 @@ static UINavigationController *SettingsNavigationController(YTSettingsViewContro
+     UINavigationController *navigationController = settingsViewController.navigationController;
+     if (navigationController)
+         return navigationController;
+-    for (UIWindow *window in [UIApplication sharedApplication].windows) {
++    for (UIWindow *window in GonerinoActiveWindows()) {
+         navigationController = NavigationControllerContaining(window.rootViewController,
+                                                                settingsViewController,
+                                                                0);
+diff --git a/sources/Util.m b/sources/Util.m
+index bed0faf..888b851 100644
+--- a/sources/Util.m
++++ b/sources/Util.m
+@@ -6,6 +6,22 @@
+ 
+ NSString * const FeedFilterStateDidChangeNotification = @"FeedFilterStateDidChangeNotification";
+ 
++NSArray<UIWindow *> *GonerinoActiveWindows(void) {
++    NSMutableArray<UIWindow *> *foregroundWindows = [NSMutableArray array];
++    NSMutableArray<UIWindow *> *fallbackWindows = [NSMutableArray array];
++    for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
++        if (![scene isKindOfClass:UIWindowScene.class])
++            continue;
++        NSArray<UIWindow *> *windows = ((UIWindowScene *)scene).windows;
++        [fallbackWindows addObjectsFromArray:windows];
++        if (scene.activationState == UISceneActivationStateForegroundActive ||
++            scene.activationState == UISceneActivationStateForegroundInactive) {
++            [foregroundWindows addObjectsFromArray:windows];
++        }
++    }
++    return foregroundWindows.count > 0 ? foregroundWindows.copy : fallbackWindows.copy;
++}
++
+ static BOOL ObjectIsClassNamed(id object, NSString *className);
+ static id DirectNamedValue(id object, NSString *key);
+ static void AdaptShortsNode(id node, NSMutableArray<id> *objects, NSMutableSet *visited);
+@@ -1874,7 +1890,7 @@ + (void)showToast:(NSString *)message fromView:(UIView *)view {
+     dispatch_async(dispatch_get_main_queue(), ^{
+         UIWindow *window = view.window;
+         if (!window) {
+-            for (UIWindow *candidate in [UIApplication sharedApplication].windows) {
++            for (UIWindow *candidate in GonerinoActiveWindows()) {
+                 if (candidate.isKeyWindow) {
+                     window = candidate;
+                     break;
+@@ -1882,7 +1898,7 @@ + (void)showToast:(NSString *)message fromView:(UIView *)view {
+             }
+         }
+         if (!window)
+-            window = [UIApplication sharedApplication].windows.firstObject;
++            window = GonerinoActiveWindows().firstObject;
+         if (!window)
+             return;
+ 
+

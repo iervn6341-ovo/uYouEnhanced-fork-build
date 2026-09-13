@@ -88,6 +88,12 @@ jobs:
           cd ${{ github.workspace }}/main
           git -C Tweaks/YTABConfig apply ../../Patches/YTABConfig-readable-annotations.patch
 
+      - name: Apply Gonerino window scene compatibility
+        run: |
+          cd ${{ github.workspace }}/main
+          git -C Tweaks/Gonerino apply --check ../../Patches/Gonerino-window-scenes.patch
+          git -C Tweaks/Gonerino apply ../../Patches/Gonerino-window-scenes.patch
+
       - name: Test Caption Island
         run: |
           cd ${{ github.workspace }}/main
