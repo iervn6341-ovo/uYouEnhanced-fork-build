@@ -93,6 +93,30 @@ index fb15c8c..c5583ce 100644
          navigationController = NavigationControllerContaining(window.rootViewController,
                                                                 settingsViewController,
                                                                 0);
+diff --git a/sources/Tweak.x b/sources/Tweak.x
+index 310dbbf..b46097b 100644
+--- a/sources/Tweak.x
++++ b/sources/Tweak.x
+@@ -1174,7 +1174,6 @@ static void PrepareNavigationButton(YTRightNavigationButtons *owner) {
+         owner.actionButton.frame = CGRectMake(0, 0, 40, 40);
+         owner.actionButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+         owner.actionButton.imageView.contentMode = UIViewContentModeCenter;
+-        owner.actionButton.adjustsImageWhenHighlighted = NO;
+         [owner.actionButton addTarget:owner action:@selector(actionButtonPressed:)
+                       forControlEvents:UIControlEventTouchUpInside];
+         [owner addSubview:owner.actionButton];
+@@ -1229,8 +1228,10 @@ static void UpdateNavigationButton(YTRightNavigationButtons *owner) {
+     owner.actionButton.hidden = !shouldShow;
+     if (changed) {
+         UIImage *image = isEnabled ? images.firstObject : images.lastObject;
+-        if (image)
++        if (image) {
+             [owner.actionButton setImage:image forState:UIControlStateNormal];
++            [owner.actionButton setImage:image forState:UIControlStateHighlighted];
++        }
+         owner.actionButton.tintColor = pageStyle == UIUserInterfaceStyleDark ? UIColor.whiteColor : UIColor.blackColor;
+         owner.actionButton.accessibilityLabel = LocalizedString(@"Gonerino");
+         owner.actionButton.accessibilityValue = LocalizedString(isEnabled ? @"Enabled" : @"Disabled");
 diff --git a/sources/Util.m b/sources/Util.m
 index bed0faf..888b851 100644
 --- a/sources/Util.m
