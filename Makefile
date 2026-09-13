@@ -89,25 +89,24 @@ STATIC_EXTENSION_NAMES := $(filter-out OpenYoutubeSafariExtension.appex,$(STATIC
 endif
 GENERATED_EXTENSION_APPEXS = $(addprefix $(GENERATED_EXTENSIONS_DIR)/,$(STATIC_EXTENSION_NAMES))
 $(TWEAK_NAME)_EMBED_BUNDLES = \
-	$(wildcard Bundles/*.bundle) \
+	Bundles/uYouPlus.bundle \
+	Bundles/RYD.bundle \
+	Bundles/DontEatMyContent.bundle \
+	Bundles/YouGroupSettings.bundle \
+	Bundles/YTABC.bundle \
 	$(wildcard Tweaks/CaptionIsland/Assets/*.bundle) \
-	Tweaks/YTKACE/Resources/YTKACE.bundle \
-	Tweaks/Return-YouTube-Dislikes/layout/Library/Application\ Support/RYD.bundle \
-	Tweaks/DontEatMyContent/layout/Library/Application\ Support/DontEatMyContent.bundle \
-	Tweaks/Gonerino/layout/Library/Application\ Support/Gonerino.bundle \
-	Tweaks/YouGroupSettings/layout/Library/Application\ Support/YouGroupSettings.bundle \
-	Tweaks/YTABConfig/layout/Library/Application\ Support/YTABC.bundle
+	Tweaks/YTKACE/Resources/YTKACE.bundle
 ifeq ($(ENABLE_QUALITY_EXTRAS),1)
-$(TWEAK_NAME)_EMBED_BUNDLES += Tweaks/YouQuality/layout/Library/Application\ Support/YouQuality.bundle Tweaks/YouChooseQuality/layout/Library/Application\ Support/YouChooseQuality.bundle
+$(TWEAK_NAME)_EMBED_BUNDLES += Bundles/YouQuality.bundle
 endif
 ifeq ($(ENABLE_YOUMUTE),1)
-$(TWEAK_NAME)_EMBED_BUNDLES += Tweaks/YouMute/layout/Library/Application\ Support/YouMute.bundle
+$(TWEAK_NAME)_EMBED_BUNDLES += Bundles/YouMute.bundle
 endif
 ifeq ($(ENABLE_YOUSLIDER),1)
-$(TWEAK_NAME)_EMBED_BUNDLES += Tweaks/YouSlider/layout/Library/Application\ Support/YouSlider.bundle
+$(TWEAK_NAME)_EMBED_BUNDLES += Bundles/YouSlider.bundle
 endif
 ifeq ($(ENABLE_YTUHD),1)
-$(TWEAK_NAME)_EMBED_BUNDLES += Tweaks/YTUHD/layout/Library/Application\ Support/YTUHD.bundle
+$(TWEAK_NAME)_EMBED_BUNDLES += Bundles/YTUHD.bundle
 endif
 $(TWEAK_NAME)_EMBED_EXTENSIONS = $(GENERATED_EXTENSION_APPEXS) $(CAPTION_ISLAND_WIDGET_APPEX)
 
@@ -170,6 +169,14 @@ before-all::
 	fi
 before-package::
 	@test -f "$(IPA)/Info.plist"
+	@test -d "Tweaks/Gonerino/layout/Library/Application Support/Gonerino.bundle"
+	@rm -rf "$(IPA)/Gonerino.bundle"
+	@cp -R "Tweaks/Gonerino/layout/Library/Application Support/Gonerino.bundle" "$(IPA)/Gonerino.bundle"
+	@if [ "$(ENABLE_QUALITY_EXTRAS)" = "1" ]; then \
+		test -d "Tweaks/YouChooseQuality/layout/Library/Application Support/YouChooseQuality.bundle"; \
+		rm -rf "$(IPA)/YouChooseQuality.bundle"; \
+		cp -R "Tweaks/YouChooseQuality/layout/Library/Application Support/YouChooseQuality.bundle" "$(IPA)/YouChooseQuality.bundle"; \
+	fi
 	@bash Sources/prepare-alternate-icons.sh "$(IPA)" "Localizations/uYouPlus.bundle/AppIcons"
 	@plutil -replace NSSupportsLiveActivities -bool YES "$(IPA)/Info.plist" 2>/dev/null || \
 		plutil -insert NSSupportsLiveActivities -bool YES "$(IPA)/Info.plist"
